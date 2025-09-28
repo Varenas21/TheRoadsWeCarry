@@ -1,153 +1,89 @@
-using System;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    [Header("Player Objects")]
-    private Rigidbody rb;
-    public Transform camTransform;
-    public float mouseSensitivity;
+    [Header("Movement Settings")]
+    [SerializeField] private float speed = 5f;
+    [SerializeField] private float gravity = -9.8f;
+    [SerializeField] private float jumpHeight = 2f;
 
-    [Header("Player Movement")]
-    float x_Rotation = 0f;
-    private float horizontalAxis;
-    private float verticalAxis;
-    public float playerSpeed;
+    [Header("Camera Settings")]
+    [SerializeField] private float mouseSensitivity = 0.5f;
+    [SerializeField] private Transform playerBody;
+    [SerializeField] private Transform camTransform;
 
-    [Header("Player Interactavity")]
-    public GameObject pickedObj;
-    public LayerMask pickableLayer;
-    public float detectRange;
-    public float throwForce;
-
-    [Header("UI")]
-    public TMP_Text detectedObjName;
-    public GameObject pickablePopup;
-    public Image cursorDot;
-    public Color[] cursorColors;
+    private CharacterController controller;
+    private Vector3 velocity;
+    private Vector2 moveInput;
+    private Vector2 lookInput;
+    private float xRotation = 0f;
 
 
     private void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        controller = GetComponent<CharacterController>();
 
         Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+
     }
 
-    void Update()
+    public void OnLook(InputAction.CallbackContext context)
     {
+        lookInput = context.ReadValue<Vector2>();
+    }
+
+    public void OnMove(InputAction.CallbackContext context)
+    {
+        moveInput = context.ReadValue<Vector2>();
+        Debug.Log($"Move Input: {moveInput}");
+
+    }
+
+    public void OnJump(InputAction.CallbackContext context)
+    {
+        Debug.Log($"Jumping {context.performed} - Is Grounded: {controller.isGrounded}");
+        if (context.performed && controller.isGrounded)
+        {
+            Debug.Log("We are jumping");
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+        }
+    }
+
+     private void CameraMovement()
+    {
+        float mouseX  = lookInput.x * mouseSensitivity;
+        float mouseY = lookInput.y * mouseSensitivity;
+
+        xRotation -= mouseY;
+        xRotation = Mathf.Clamp(xRotation, -80f, 80f);
+
+        camTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+
+        playerBody.Rotate(Vector3.up * mouseX);
+        
+    }
+
+    private void PlayerMovement()
+    {
+        Vector3 move = (playerBody.right * moveInput.x) + (playerBody.forward * moveInput.y);
+        move.y = 0f;
+
+        controller.Move(move * speed * Time.deltaTime);
+
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
+
+        if (controller.isGrounded && velocity.y < 0) { velocity.y = -2f; }
+
+    }
+
+
+    private void Update()
+    {
+        PlayerMovement();
         CameraMovement();
-    }
-
-    void FixedUpdate()
-    {
-        ControlsUpdate();
-    }
-
-    private void ControlsUpdate()
-    {
-        horizontalAxis = Input.GetAxis("Horizontal");
-        verticalAxis = Input.GetAxis("Vertical");
-
-        Vector3 forward = camTransform.forward;
-        Vector3 right = camTransform.right;
-
-        forward.y = 0;
-        right.y = 0;
-        forward.Normalize();
-        right.Normalize();
-
-        Vector3 moveDirection = (forward * verticalAxis + right * horizontalAxis).normalized;
-
-        if (moveDirection.magnitude > 0)
-        {
-            rb.AddForce(moveDirection * playerSpeed * 10f, ForceMode.Force);
-        }
-
-        //RaycastToCenter();
-        HoldObject();
-    }
-
-
-    void CameraMovement()
-    {
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
-
-        x_Rotation -= mouseY;
-        x_Rotation = Mathf.Clamp(x_Rotation, -90f, 90f);
-
-        camTransform.localRotation = Quaternion.Euler(x_Rotation, 0f, 0f);
-
-        transform.Rotate(Vector3.up * mouseX);
-    }
-
-    void RaycastToCenter()
-    {
-        RaycastHit hit;
-
-        if (Physics.Raycast(camTransform.position, camTransform.forward, out hit, detectRange))
-        {
-            //cursorDot.color = cursorColors[1];
-
-            if (!detectedObjName.gameObject.activeSelf) { detectedObjName.gameObject.SetActive(true); }
-
-            if (detectedObjName.text != hit.collider.name) { detectedObjName.text = hit.collider.name; }
-
-            RaycastHit hitObjPickable;
-
-            if (Physics.Raycast(camTransform.position, camTransform.forward, out hitObjPickable, detectRange, pickableLayer))
-            {
-                if (!pickablePopup.activeSelf) { pickablePopup.SetActive(true); }
-            }
-            else
-            {
-                if (pickablePopup.activeSelf) { pickablePopup.SetActive(false); }
-            }
-
-        }
 
     }
 
-    private void HoldObject()
-    {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            RaycastHit hit;
-            if (Physics.Raycast(camTransform.position, camTransform.forward, out hit, detectRange, pickableLayer))
-            {
-                pickedObj = hit.collider.gameObject;
-                pickedObj.transform.parent = camTransform;
-                Rigidbody objRb = pickedObj.GetComponent<Rigidbody>();
-                objRb.isKinematic = true;
-            }
-        }
-
-        if (Input.GetKeyUp(KeyCode.E))
-        {
-            if (pickedObj != null)
-            {
-                Rigidbody objRb = pickedObj.GetComponent<Rigidbody>();
-                objRb.isKinematic = false;
-                pickedObj.transform.parent = null;
-                pickedObj = null;
-            }
-        }
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (pickedObj != null)
-            {
-                Rigidbody objRb = pickedObj.GetComponent<Rigidbody>();
-
-                pickedObj.transform.parent = null;
-                objRb.isKinematic = false;
-                objRb.AddForce(throwForce * camTransform.forward, ForceMode.Impulse);
-                pickedObj = null;
-            }
-        }
-    }
 }

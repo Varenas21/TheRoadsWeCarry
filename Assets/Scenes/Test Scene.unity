@@ -131,8 +131,10 @@ GameObject:
   - component: {fileID: 942241503}
   - component: {fileID: 942241502}
   - component: {fileID: 942241501}
+  - component: {fileID: 942241507}
   - component: {fileID: 942241505}
   - component: {fileID: 942241500}
+  - component: {fileID: 942241506}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -152,21 +154,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ec24442a3ad5b745b1db1b3f411e1d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  camTransform: {fileID: 1551932905}
-  mouseSensitivity: 100
-  playerSpeed: 1
-  pickedObj: {fileID: 0}
-  pickableLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  detectRange: 2
-  throwForce: 3
-  detectedObjName: {fileID: 0}
-  pickablePopup: {fileID: 0}
-  cursorDot: {fileID: 0}
-  cursorColors:
-  - {r: 0, g: 0, b: 1, a: 1}
-  - {r: 0.7803922, g: 0.08235294, b: 0.5215687, a: 1}
+  speed: 5
 --- !u!136 &942241501
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -289,6 +277,81 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 112
   m_CollisionDetection: 2
+--- !u!114 &942241506
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 942241499}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInput
+  m_Actions: {fileID: -944628639613478452, guid: 0ea67e7c0dae23642bce15ccd8b44469, type: 3}
+  m_NotificationBehavior: 2
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ControlsChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents:
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 942241500}
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
+        m_MethodName: onMove
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 0ed04583-0c0c-4715-b5cd-991cb0562c83
+    m_ActionName: 'Gameplay/Move[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 31e1cd71-b669-4683-b39e-ede745e07534
+    m_ActionName: 'Gameplay/Jump[/Keyboard/space]'
+  m_NeverAutoSwitchControlSchemes: 0
+  m_DefaultControlScheme: 
+  m_DefaultActionMap: Gameplay
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 0}
+--- !u!143 &942241507
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 942241499}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1543770553
 GameObject:
   m_ObjectHideFlags: 0
