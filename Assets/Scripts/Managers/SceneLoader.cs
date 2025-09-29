@@ -1,13 +1,10 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEditor;
+using System.Collections;
 
 public class SceneLoader : MonoBehaviour
 {
-    [SerializeField] private Animator m_Animator;
-    [SerializeField] private GameObject loadingScreen;
-
-    private string sceneToLoad;
 
     public enum SceneName
     {
@@ -16,33 +13,10 @@ public class SceneLoader : MonoBehaviour
         TestScene
     }
 
-    public void Start()
-    {
-        if (m_Animator == null) { m_Animator = GetComponent<Animator>(); }
-        if(loadingScreen != null) { loadingScreen.SetActive(false); }
-    }
     public void LoadSceneByName(string sceneName)
     {
         Debug.Log("Scene Loading");
-        sceneToLoad = sceneName;
-        m_Animator.SetTrigger("FadeOut");
-    }
-
-    public void OnFadeOutComplete()
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-        SceneManager.LoadScene(sceneToLoad);
-    }
-
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-        m_Animator.SetTrigger("FadeIn");
-    }
-
-    public void OnFadeInComplete()
-    {
-        if (loadingScreen != null) { loadingScreen.SetActive(false); }
+        SceneManager.LoadScene(sceneName);
     }
 
     public void LoadSceneByIndex(int buildIndex)
@@ -54,6 +28,18 @@ public class SceneLoader : MonoBehaviour
     {
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         SceneManager.LoadScene(currentSceneIndex + 1);
+    }
+
+    public IEnumerator LoadSceneAsync(string sceneName)
+    {
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
+
+        while (!asyncLoad.isDone)
+        {
+            Debug.Log("Loading in Progress: " + asyncLoad.progress);
+            yield return null;
+        }
+        Debug.Log("Scene loading completed!");
     }
 
     public void UnloadScene(string sceneName)
